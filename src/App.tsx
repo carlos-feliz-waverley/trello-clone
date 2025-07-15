@@ -1,23 +1,52 @@
 import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
+import { Amplify } from 'aws-amplify';
 import Navbar from "./Components/Navbar/Navbar";
 import Columns from "./Components/Columns/Columns";
 import Modal from "./Components/Modal/Modal";
+import client from "./utils/amplifyClient";
 
-const client = generateClient<Schema>();
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  assignee: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEW';
+  createdAt: string;
+}
+
+// Initialize Amplify with your configuration
+Amplify.configure({
+  DataStore: {
+    models: {
+      Task: {
+        title: 'string',
+        description: 'string',
+        assignee: 'string',
+        status: 'string',
+        createdAt: 'timestamp'
+      }
+    }
+  }
+});
 
 function App() {
-  const [tasks, setTasks] = useState<Array<Schema["Task"]["type"]>>([]);
+  const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
-    client.models.Task.observeQuery().subscribe({
-      next: (data) => setTasks([...data.items]),
-    });
+    // Initialize tasks when component mounts
+    const fetchTasks = async () => {
+      try {
+        const result = await client.models.Task.query();
+        setTasks(result.items);
+      } catch (error) {
+        console.error('Error fetching tasks:', error);
+      }
+    };
+    fetchTasks();
   }, []);
 
-  const handleTaskCreated = (task: Schema["Task"]["type"]) => {
+  const handleTaskCreated = (task: Task) => {
     setTasks(prev => [...prev, task]);
   };
 

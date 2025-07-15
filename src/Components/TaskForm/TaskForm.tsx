@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
-import { generateClient } from 'aws-amplify/data';
-import type { Schema } from '@/amplify/data/resource';
+import client from '../../utils/amplifyClient';
 
-const client = generateClient<Schema>();
+interface Task {
+  id: string;
+  title: string;
+  description: string;
+  assignee: string;
+  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEW';
+  createdAt: string;
+}
 
 interface TaskFormProps {
   onClose: () => void;
-  onSubmit: (task: any) => void;
+  onSubmit: (task: Task) => void;
 }
 
 const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
@@ -35,11 +41,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
     }
 
     try {
-      const task = await client.create('Task', {
+      const task = await client.models.Task.create({
         title: formData.title,
         description: formData.description,
         assignee: formData.assignee,
-        status: formData.status,
+        status: formData.status as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEW',
         createdAt: new Date().toISOString()
       });
       
@@ -47,7 +53,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
       onClose();
     } catch (error) {
       console.error('Error creating task:', error);
-      alert('Failed to create task. Please try again.');
+      if (error instanceof Error) {
+        alert(`Failed to create task: ${error.message}`);
+      } else {
+        alert('Failed to create task. Please try again.');
+      }
     }
   };
 
@@ -64,7 +74,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
           value={formData.title}
           onChange={handleChange}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 h-10 p-4 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
@@ -77,9 +87,9 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
           name="description"
           value={formData.description}
           onChange={handleChange}
-          rows={15}
+          rows={13}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 h-28 p-4 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
@@ -94,7 +104,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
           value={formData.assignee}
           onChange={handleChange}
           required
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+          className="mt-1 h-10 p-4 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
         />
       </div>
 
