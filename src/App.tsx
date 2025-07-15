@@ -1,9 +1,14 @@
 import { useEffect, useState } from "react";
-import { Amplify } from 'aws-amplify';
 import Navbar from "./Components/Navbar/Navbar";
 import Columns from "./Components/Columns/Columns";
 import Modal from "./Components/Modal/Modal";
-import client from "./utils/amplifyClient";
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../amplify/data/resource';
+
+
+const client = generateClient<Schema>({
+  authMode: 'apiKey',
+});
 
 interface Task {
   id: string;
@@ -14,21 +19,6 @@ interface Task {
   createdAt: string;
 }
 
-// Initialize Amplify with your configuration
-Amplify.configure({
-  DataStore: {
-    models: {
-      Task: {
-        title: 'string',
-        description: 'string',
-        assignee: 'string',
-        status: 'string',
-        createdAt: 'timestamp'
-      }
-    }
-  }
-});
-
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,8 +27,23 @@ function App() {
     // Initialize tasks when component mounts
     const fetchTasks = async () => {
       try {
-        const result = await client.models.Task.query();
-        setTasks(result.items);
+        const { data: result } = await client.models.Task.list({
+          authMode: 'apiKey',
+        });
+
+        console.log(result);
+        
+        // Handle nullable fields by providing default values
+        const formattedTasks = result?.map((task: any) => ({
+          id: task.id,
+          title: task.title || '',
+          description: task.description || '',
+          assignee: task.assignee || '',
+          status: task.status || 'PENDING',
+          createdAt: task.createdAt?.toString() || new Date().toISOString()
+        })) || [];
+        
+        setTasks(formattedTasks);
       } catch (error) {
         console.error('Error fetching tasks:', error);
       }
