@@ -2,22 +2,14 @@ import { useEffect, useState } from "react";
 import Navbar from "./Components/Navbar/Navbar";
 import Columns from "./Components/Columns/Columns";
 import Modal from "./Components/Modal/Modal";
+import TaskForm from "./Components/TaskForm/TaskForm";
 import { generateClient } from 'aws-amplify/data';
 import type { Schema } from '../amplify/data/resource';
-
+import { Task } from "./types/Task";
 
 const client = generateClient<Schema>({
   authMode: 'apiKey',
 });
-
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  assignee: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEW';
-  createdAt: string;
-}
 
 function App() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -40,7 +32,8 @@ function App() {
           description: task.description || '',
           assignee: task.assignee || '',
           status: task.status || 'PENDING',
-          createdAt: task.createdAt?.toString() || new Date().toISOString()
+          createdAt: task.createdAt?.toString() || new Date().toISOString(),
+          updatedAt: task.updatedAt?.toString() || new Date().toISOString()
         })) || [];
         
         setTasks(formattedTasks);
@@ -63,34 +56,50 @@ function App() {
           {
             id: '1',
             title: 'To Do',
-            cards: tasks.filter(task => task.status === 'PENDING').map(task => ({
-              id: task.id,
-              title: task.title,
-              description: task.description
-            }))
+            cards: tasks
+              .filter(task => task.status === 'PENDING')
+              .filter(task => task.title !== null && task.description !== null)
+              .map(task => ({
+                id: task.id,
+                title: task.title as string,
+                description: task.description as string
+              }))
           },
           {
             id: '2',
             title: 'In Progress',
-            cards: tasks.filter(task => task.status === 'IN_PROGRESS').map(task => ({
-              id: task.id,
-              title: task.title,
-              description: task.description
-            }))
+            cards: tasks
+              .filter(task => task.status === 'IN_PROGRESS')
+              .filter(task => task.title !== null && task.description !== null)
+              .map(task => ({
+                id: task.id,
+                title: task.title as string,
+                description: task.description as string
+              }))
           },
           {
             id: '3',
             title: 'Review',
-            cards: []
+            cards: tasks
+              .filter(task => task.status === 'REVIEW')
+              .filter(task => task.title !== null && task.description !== null)
+              .map(task => ({
+                id: task.id,
+                title: task.title as string,
+                description: task.description as string
+              }))
           },
           {
             id: '4',
             title: 'Done',
-            cards: tasks.filter(task => task.status === 'COMPLETED').map(task => ({
-              id: task.id,
-              title: task.title,
-              description: task.description
-            }))
+            cards: tasks 
+              .filter(task => task.status === 'COMPLETED')
+              .filter(task => task.title !== null && task.description !== null)
+              .map(task => ({
+                id: task.id,
+                title: task.title as string,
+                description: task.description as string
+              }))
           }
         ]} />
         <button
@@ -104,7 +113,9 @@ function App() {
           onClose={() => setIsModalOpen(false)}
           title="Add New Task"
           onTaskCreated={handleTaskCreated}
-        />
+        >
+          <TaskForm onSubmit={handleTaskCreated} onClose={() => setIsModalOpen(false)} />
+        </Modal>
       </main>
     </div>
   );

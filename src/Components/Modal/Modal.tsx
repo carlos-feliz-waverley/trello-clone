@@ -15,9 +15,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   onTaskCreated?: (task: any) => void;
+  children: React.ReactNode;
 }
 
-const StyledModal = styled(MuiModal)(({ theme }) => ({
+const StyledModal = styled(MuiModal)(() => ({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

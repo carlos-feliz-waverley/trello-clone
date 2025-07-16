@@ -1,14 +1,11 @@
 import React, { useState } from 'react';
-import client from '../../utils/amplifyClient';
+import { generateClient } from 'aws-amplify/data';
+import type { Schema } from '../../../amplify/data/resource';
+import { Task } from '../../types/Task';
 
-interface Task {
-  id: string;
-  title: string;
-  description: string;
-  assignee: string;
-  status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEW';
-  createdAt: string;
-}
+const client = generateClient<Schema>({
+  authMode: 'apiKey',
+});
 
 interface TaskFormProps {
   onClose: () => void;
@@ -20,7 +17,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
     title: '',
     description: '',
     assignee: '',
-    status: 'PENDING'
+    status: 'IN_PROGRESS'
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -41,14 +38,27 @@ const TaskForm: React.FC<TaskFormProps> = ({ onClose, onSubmit }) => {
     }
 
     try {
-      const task = await client.models.Task.create({
+      const response = await client.models.Task.create({
         title: formData.title,
-        description: formData.description,
+        description: formData.description || null,
         assignee: formData.assignee,
-        status: formData.status as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'REVIEW',
-        createdAt: new Date().toISOString()
+        status: formData.status,
+        createdAt: Date.now(),
       });
       
+      if (!response.data) {
+        throw new Error('Failed to create task - no data returned');
+      }
+      
+      const task: Task = {
+        id: response.data.id,
+        title: response.data.title,
+        description: response.data.description || null,
+        assignee: response.data.assignee,
+        status: response.data.status,
+        createdAt: response.data.createdAt?.toString() || null,
+        updatedAt: response.data.updatedAt?.toString() || null,
+      };
       onSubmit(task);
       onClose();
     } catch (error) {

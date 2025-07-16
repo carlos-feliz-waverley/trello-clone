@@ -1,0 +1,23 @@
+type Task {
+  id: ID!
+  title: String!
+  description: String
+  assignee: String!
+  status: String!
+  createdAt: AWSDateTime!
+}
+
+enum Status {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  REVIEW
+}
+
+input CreateTaskInput {
+  title: String!
+  description: String
+  assignee: String!
+  status: Status!
+  createdAt: AWSDateTime!
+}

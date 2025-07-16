@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom'
-import { expect } from 'vitest'
+import { expect, vi } from 'vitest'
 
 // Extend Vitest's expect with Jest DOM matchers
 expect.extend({
