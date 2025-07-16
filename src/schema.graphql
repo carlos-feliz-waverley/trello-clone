@@ -4,7 +4,6 @@ type Task {
   description: String
   assignee: String!
   status: String!
-  createdAt: AWSDateTime!
 }
 
 enum Status {
@@ -19,5 +18,18 @@ input CreateTaskInput {
   description: String
   assignee: String!
   status: Status!
-  createdAt: AWSDateTime!
+}
+
+input UpdateTaskInput {
+  id: ID!
+  title: String
+  description: String
+  assignee: String
+  status: Status
+}
+
+type Mutation {
+  createTask(input: CreateTaskInput!): Task
+  updateTask(input: UpdateTaskInput!): Task
+  deleteTask(id: ID!): Task
 }

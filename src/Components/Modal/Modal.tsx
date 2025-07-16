@@ -1,5 +1,5 @@
 import React from 'react';
-import TaskForm from '../TaskForm/TaskForm';
+
 import {
   Modal as MuiModal,
   Box,
@@ -34,12 +34,7 @@ const ModalContent = styled(Paper)(({ theme }) => ({
   borderRadius: theme.shape.borderRadius,
 }));
 
-const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, onTaskCreated }) => {
-  const handleTaskCreated = async (task: any) => {
-    if (onTaskCreated) {
-      onTaskCreated(task);
-    }
-  };
+const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }) => {
 
   return (
     <StyledModal
@@ -57,7 +52,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, onTaskCreated }) 
             <CloseIcon />
           </IconButton>
         </Box>
-        <TaskForm onClose={onClose} onSubmit={handleTaskCreated} />
+        {children}
       </ModalContent>
     </StyledModal>
   );

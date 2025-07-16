@@ -9,7 +9,7 @@ const Navbar = ({ onAddColumn }: NavbarProps) => {
       {onAddColumn && (
         <button
           onClick={onAddColumn}
-          className="ml-auto px-4 py-2 bg-blue-800 hover:bg-blue-700 rounded-md"
+          className="ml-auto bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
         >
           Add Column
         </button>
